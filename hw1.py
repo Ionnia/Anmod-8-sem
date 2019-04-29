@@ -29,8 +29,29 @@ for i in range(1, 21):
     print("n = ", i, "Probability is ", v_otkaza[i-1][1])
 
 # График вероятности отказа
-plt.plot([x[0] for x in v_otkaza], [y[1]*100 for y in v_otkaza])
-plt.xticks([x[0] for x in v_otkaza][1::2])
+# plt.plot([x[0] for x in v_otkaza], [y[1]*100 for y in v_otkaza])
+# plt.xticks([x[0] for x in v_otkaza][1::2])
+# plt.xlabel("Количество операторов")
+# plt.ylabel("Вероятность отказа, %")
+# plt.show()
+
+def N_srednee(n):
+    result = 0
+    for i in range(1, n+1):
+        result += i * calc_Pi(i, n, alpha)
+    return result
+
+def calc_q(n):
+    return N_srednee(n)/n
+
+q_zagruzki = []
+for i in range(1, 21):
+    q_zagruzki.append([i, calc_q(i)])
+    print("n = ", i, "q is ", q_zagruzki[i-1][1])
+
+# График занятости
+plt.plot([x[0] for x in q_zagruzki], [y[1] for y in q_zagruzki])
+plt.xticks([x[0] for x in q_zagruzki][1::2])
 plt.xlabel("Количество операторов")
-plt.ylabel("Вероятность отказа, %")
+plt.ylabel("Занятость")
 plt.show()
