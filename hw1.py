@@ -30,12 +30,14 @@ for i in range(1, 21):
     # print("Числитель:", pow(alpha, i) * calc_P0(i, alpha), "  Знаменатель: ", factorial(i))
 
 # График вероятности отказа
-# plt.plot([x[0] for x in v_otkaza], [y[1]*100 for y in v_otkaza])
-# plt.xticks([x[0] for x in v_otkaza][1::2])
-# plt.xlabel("Количество операторов")
-# plt.ylabel("Вероятность отказа, %")
-# plt.title("График вероятности отказа")
+plt.plot([x[0] for x in v_otkaza], [y[1]*100 for y in v_otkaza])
+plt.xticks([x[0] for x in v_otkaza][1::2])
+plt.xlabel("Количество операторов")
+plt.ylabel("Вероятность отказа, %")
+plt.title("График вероятности отказа")
 # plt.show()
+plt.savefig("Figure1.png")
+plt.close()
 
 def N_srednee(n):
     result = 0
@@ -52,12 +54,14 @@ for i in range(1, 21):
     # print("n = ", i, "q is ", q_zagruzki[i-1][1])
 
 # # График занятости
-# plt.plot([x[0] for x in q_zagruzki], [y[1] for y in q_zagruzki])
-# plt.xticks([x[0] for x in q_zagruzki][1::2])
-# plt.xlabel("Количество операторов")
-# plt.ylabel("Занятость")
-# plt.title("Занятость операторов")
+plt.plot([x[0] for x in q_zagruzki], [y[1] for y in q_zagruzki])
+plt.xticks([x[0] for x in q_zagruzki][1::2])
+plt.xlabel("Количество операторов")
+plt.ylabel("Занятость")
+plt.title("Занятость операторов")
 # plt.show()
+plt.savefig("Figure2.png")
+plt.close()
 
 def calc_P0_ochered(n, m, alpha):
     sum1 = 0
@@ -82,4 +86,34 @@ plt.xticks([x[0] for x in izm_otkazov_pri_zamene_na_ochered][1::2])
 plt.xlabel("Мест в очереди")
 plt.ylabel("Отказы, %")
 plt.title("Изменение отказов от мест в очереди")
-plt.show()
+# plt.show()
+plt.savefig("Figure3.png")
+plt.close()
+
+def N_srednee_ochered(n, m):
+    sum1 = 0
+    sum2 = 0
+    for i in range(1, n+1):
+        sum1 += (pow(alpha, i)/factorial(i-1))
+    for i in range(n+1, n+m+1):
+        sum2 += pow(alpha/n, i-n)
+    sum2 *= pow(alpha, n)/factorial(n-1)
+    return calc_P0_ochered(n, m, alpha) * (sum1 + sum2)
+
+def calc_q_ochered(n, m):
+    return N_srednee_ochered(n, m)/n
+
+zagruzka_operatorov_ochered = []
+
+for i in range(0, 16):
+    zagruzka_operatorov_ochered.append([i, calc_q_ochered(16, i)])
+
+# # График изменения операторов при изменении длины очереди
+plt.plot([x[0] for x in zagruzka_operatorov_ochered], [y[1] for y in zagruzka_operatorov_ochered])
+plt.xticks([x[0] for x in zagruzka_operatorov_ochered][1::2])
+plt.xlabel("Мест в очереди")
+plt.ylabel("Загрузка")
+plt.title("Загрузка операторов")
+# plt.show()
+plt.savefig("Figure4.png")
+plt.close()
