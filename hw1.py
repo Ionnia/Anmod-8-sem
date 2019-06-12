@@ -1,119 +1,55 @@
-# Баймаканов В.К. РК6-81
-# Вариант 1
+# Домашнее задание по ТМО. Задание #1
+# Баймаканов В.К. РК6-81Б
 
-from math import factorial, pow
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+import math
 
-Tc = 25
-Ts = 213
-Tw = 514
+# Условия
+t_c = 25 # Среднее время звонка
+t_s = 213 # Среднее время обслуживания
 
-lam = 1/Tc
-mu = 1/Ts
+lam = 1/t_c
+mu = 1/t_s
 
-alpha = lam/mu
+# lam - интенсивность потока заявок, mu
+def p_n(n, lam, mu):
+    p = lam/mu
+    p0 = 1
+    for i in range(1, n+1):
+        p0 += p**i/math.factorial(i)
+    p0 = p0**(-1)
+    p_n = []
+    p_n.append(p0)
+    for i in range(1, n+1):
+        p_n.append(p0 * p**i/math.factorial(i))
+    return p_n
 
-def calc_P0(n, alpha):
-    denominator = 1
-    for i in range(0, n):
-        denominator += pow(alpha, i+1)/factorial(i+1)
-    return 1/denominator
+def p_otkaza(n, lam, mu):
+    p_otkaza = p_n(n, lam, mu)
+    return p_otkaza[n]
 
-def calc_Pi(i, n, alpha):
-    return (pow(alpha, i)/factorial(i)) * calc_P0(n, alpha)
+# Задание 1
+p_n_otkaza = []
+q_n_zagruzka = []
+p_x_axis = []
+for i in range(1, 25):
+    p_n_otkaza.append(p_otkaza(i, 1/t_c, 1/t_s))
+    Q = 1 - p_n_otkaza[i-1]      # Относительная пропускная способность
+    A = lam * Q                 # Абсолютная пропускная способность
+    k_zan = A/mu                # Среднее число занятых каналов
+    q_zag = k_zan/i             # Коэффициент загрузки каналов
+    p_x_axis.append(i)
+    q_n_zagruzka.append(q_zag)
+    print("Доля отказов для", i, "операторов:", p_n_otkaza[i-1])
 
-# Вероятность отказа
-v_otkaza = []
-for i in range(1, 21):
-    v_otkaza.append([i, calc_Pi(i, i, alpha)])
-    # print("n = ", i, "Probability is ", v_otkaza[i-1][1])
-    # print("Числитель:", pow(alpha, i) * calc_P0(i, alpha), "  Знаменатель: ", factorial(i))
+p_n_otkaza = [100*otk for otk in p_n_otkaza]
 
-# График вероятности отказа
-plt.plot([x[0] for x in v_otkaza], [y[1]*100 for y in v_otkaza])
-plt.xticks([x[0] for x in v_otkaza][1::2])
-plt.xlabel("Количество операторов")
-plt.ylabel("Вероятность отказа, %")
-plt.title("График вероятности отказа")
-# plt.show()
-plt.savefig("Figure1.png")
+plt.plot(p_x_axis, p_n_otkaza)
+plt.title("Вероятность отказа в зависимости от числа операторов")
+plt.show()
 plt.close()
 
-def N_srednee(n):
-    result = 0
-    for i in range(1, n+1):
-        result += i * calc_Pi(i, n, alpha)
-    return result
-
-def calc_q(n):
-    return N_srednee(n)/n
-
-q_zagruzki = []
-for i in range(1, 21):
-    q_zagruzki.append([i, calc_q(i)])
-    # print("n = ", i, "q is ", q_zagruzki[i-1][1])
-
-# # График занятости
-plt.plot([x[0] for x in q_zagruzki], [y[1] for y in q_zagruzki])
-plt.xticks([x[0] for x in q_zagruzki][1::2])
-plt.xlabel("Количество операторов")
-plt.ylabel("Занятость")
-plt.title("Занятость операторов")
-# plt.show()
-plt.savefig("Figure2.png")
-plt.close()
-
-def calc_P0_ochered(n, m, alpha):
-    sum1 = 0
-    sum2 = 0
-    for i in range(1, n+1):
-        sum1 += (pow(alpha, i)/factorial(i))
-    for i in range(n+1, n+m+1):
-        sum2 += pow( (alpha/n), i-n) * (pow(alpha, n)/factorial(n))
-    return 1/(sum1+sum2)
-
-def calc_Pi_ochered(i, n, m, alpha):
-    return pow(alpha/n, i-n) * (pow(alpha, n)/factorial(n)) * calc_P0_ochered(n, m, alpha)
-
-izm_otkazov_pri_zamene_na_ochered = []
-
-for i in range(0, 16):
-    izm_otkazov_pri_zamene_na_ochered.append([i, calc_Pi_ochered(16, 16, i, alpha)])
-
-# # График изменения отказов в зависимости от количества мест в очереди
-plt.plot([x[0] for x in izm_otkazov_pri_zamene_na_ochered], [y[1]*100 for y in izm_otkazov_pri_zamene_na_ochered])
-plt.xticks([x[0] for x in izm_otkazov_pri_zamene_na_ochered][1::2])
-plt.xlabel("Мест в очереди")
-plt.ylabel("Отказы, %")
-plt.title("Изменение отказов от мест в очереди")
-# plt.show()
-plt.savefig("Figure3.png")
-plt.close()
-
-def N_srednee_ochered(n, m):
-    sum1 = 0
-    sum2 = 0
-    for i in range(1, n+1):
-        sum1 += (pow(alpha, i)/factorial(i-1))
-    for i in range(n+1, n+m+1):
-        sum2 += pow(alpha/n, i-n)
-    sum2 *= pow(alpha, n)/factorial(n-1)
-    return calc_P0_ochered(n, m, alpha) * (sum1 + sum2)
-
-def calc_q_ochered(n, m):
-    return N_srednee_ochered(n, m)/n
-
-zagruzka_operatorov_ochered = []
-
-for i in range(0, 16):
-    zagruzka_operatorov_ochered.append([i, calc_q_ochered(16, i)])
-
-# # График изменения операторов при изменении длины очереди
-plt.plot([x[0] for x in zagruzka_operatorov_ochered], [y[1] for y in zagruzka_operatorov_ochered])
-plt.xticks([x[0] for x in zagruzka_operatorov_ochered][1::2])
-plt.xlabel("Мест в очереди")
-plt.ylabel("Загрузка")
-plt.title("Загрузка операторов")
-# plt.show()
-plt.savefig("Figure4.png")
+plt.plot(p_x_axis, q_n_zagruzka)
+plt.title("Коэффициент загрузки в зависимости от числа операторов")
+plt.show()
 plt.close()
